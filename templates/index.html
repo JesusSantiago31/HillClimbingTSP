@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruta Óptima</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h1, h3, h4 {
+      color: #4fc3f7;
+    }
+
+    form {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 10px #0d47a1;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-group label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      accent-color: #2196f3;
+    }
+
+    button {
+      background-color: #2196f3;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1976d2;
+    }
+
+    #resultado {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px #0d47a1;
+    }
+
+    p {
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Selecciona las ciudades</h1>
+
+  <form id="formCiudades">
+    <div class="checkbox-group">
+      <label><input type="checkbox" name="ciudad" value="Jiloyork"> Jiloyork</label>
+      <label><input type="checkbox" name="ciudad" value="Toluca"> Toluca</label>
+      <label><input type="checkbox" name="ciudad" value="Atlacomulco"> Atlacomulco</label>
+      <label><input type="checkbox" name="ciudad" value="Guadalajara"> Guadalajara</label>
+      <label><input type="checkbox" name="ciudad" value="Monterrey"> Monterrey</label>
+      <label><input type="checkbox" name="ciudad" value="QuintanaRoo"> Quintana Roo</label>
+      <label><input type="checkbox" name="ciudad" value="Michohacan"> Michoacán</label>
+      <label><input type="checkbox" name="ciudad" value="Aguascalientes"> Aguascalientes</label>
+      <label><input type="checkbox" name="ciudad" value="CDMX"> CDMX</label>
+      <label><input type="checkbox" name="ciudad" value="QRO"> Querétaro</label>
+    </div>
+    <button type="submit">Calcular Ruta</button>
+  </form>
+
+  <div id="resultado"></div>
+
+  <script>
+    const coordenadas = {
+      'Jiloyork': [19.916012, -99.580580],
+      'Toluca': [19.289165, -99.655697],
+      'Atlacomulco': [19.799520, -99.873844],
+      'Guadalajara': [20.677754, -103.346253],
+      'Monterrey': [25.691611, -100.321838],
+      'QuintanaRoo': [21.163111, -86.802315],
+      'Michohacan': [19.701400, -101.208296],
+      'Aguascalientes': [21.876410, -102.264386],
+      'CDMX': [19.432713, -99.133183],
+      'QRO': [20.597194, -100.386670]
+    };
+
+    document.getElementById('formCiudades').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const seleccionadas = Array.from(document.querySelectorAll('input[name="ciudad"]:checked')).map(cb => cb.value);
+      if (seleccionadas.length < 2) {
+        alert('Selecciona al menos dos ciudades.');
+        return;
+      }
+
+      const res = await fetch('/ruta-optima', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coordenadas, seleccionadas })
+      });
+
+      const data = await res.json();
+      const resultadoDiv = document.getElementById('resultado');
+
+      if (data.error) {
+        resultadoDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+      } else {
+        resultadoDiv.innerHTML = `
+          <h3>Ruta óptima:</h3>
+          <p>${data.mejor_ruta.join(' → ')}</p>
+          <h4>Distancia total: ${data.distancia_total.toFixed(4)}</h4>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
